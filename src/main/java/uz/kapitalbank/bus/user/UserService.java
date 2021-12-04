@@ -85,4 +85,9 @@ public class UserService {
     public Optional<User> findById(long userId) {
         return userRepo.findById(userId);
     }
+
+    public void updateUserActivity(String newSalt, User user) {
+        user.setSalt(newSalt);
+        save(user);
+    }
 }

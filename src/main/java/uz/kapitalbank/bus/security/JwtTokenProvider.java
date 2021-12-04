@@ -42,10 +42,11 @@ public class JwtTokenProvider {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
-    public String createToken(String username, String role, Long id){
+    public String createToken(String username, String role, Long id, String salt){
         Claims claims = Jwts.claims().setSubject(username);
         claims.put("role", role);
         claims.put("id", id);
+        claims.put("salt", salt);
         Date now  = new Date();
         Date validity = new Date(now.getTime() + this.validityInMlSeconds * 1000 * 72); // 3 days
 
@@ -88,9 +89,9 @@ public class JwtTokenProvider {
         return request.getHeader(this.authorization);
     }
 
-    public String generateRefreshToken(Long id, String userSalt){
+    public String generateRefreshToken(Long id, String username){
         Claims claims = Jwts.claims().setSubject(String.valueOf(id));
-        claims.put("salt", userSalt);
+        claims.put("username", username);
         Date now  = new Date();
         Date validity = new Date(now.getTime() + this.refreshValidityInMiliseconds * 1000 * 8760); // 1 year
 

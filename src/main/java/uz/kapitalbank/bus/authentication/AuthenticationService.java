@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import uz.kapitalbank.bus.common.Utils;
 import uz.kapitalbank.bus.common.message.MessageSingleton;
 import uz.kapitalbank.bus.exceptions.JwtAuthenticationException;
 import uz.kapitalbank.bus.security.JwtTokenProvider;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static uz.kapitalbank.bus.common.models.ResponseData.response;
 
@@ -55,10 +57,10 @@ public class AuthenticationService {
 
         if(!passwordEncoder.matches(loginDto.getPassword(), user.getPassword()))
             return messageSingleton.incorrectCredentials();
-
-        String token = jwtTokenProvider.createToken(user.getUsername(), user.getRole().name(), user.getId());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId(), user.getSalt());
-
+        String newSalt = Utils.generateRandomStringLower(9);
+        String token = jwtTokenProvider.createToken(user.getUsername(), user.getRole().name(), user.getId(), newSalt);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId(), user.getUsername());
+        CompletableFuture.runAsync(()->userService.updateUserActivity(newSalt, user));
         Map<String, String> responseMap = new HashMap<>();
         responseMap.put("token", token);
         responseMap.put("refreshToken",refreshToken);
@@ -77,8 +79,10 @@ public class AuthenticationService {
                     throw new JwtAuthenticationException("Authorization problem", HttpStatus.UNAUTHORIZED);
                 }else {
                     User user = userOptional.get();
-                    newToken = this.jwtTokenProvider.createToken(user.getUsername(),user.getRole().name(),user.getId());
+                    String newUsersSalt = Utils.generateRandomStringLower(9);
+                    newToken = this.jwtTokenProvider.createToken(user.getUsername(),user.getRole().name(),user.getId(),newUsersSalt);
                     responseMap.put("token", newToken);
+                    CompletableFuture.runAsync(()->userService.updateUserActivity(newUsersSalt, user));
                 }
             }
         } catch (JwtAuthenticationException e)
