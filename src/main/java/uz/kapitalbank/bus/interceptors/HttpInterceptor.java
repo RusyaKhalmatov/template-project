@@ -55,7 +55,9 @@ public class HttpInterceptor implements AsyncHandlerInterceptor {
             "login",
             "refresh-token",
             "create/user",
-            "create/admin"
+            "create/admin",
+            "getToken",
+            "refreshToken"
     ));
 
     @Override

@@ -13,4 +13,6 @@ public class MessageKey {
     public static final String USER_NOT_FOUND = "user.not_found";
     public static final String USER_ALREADY_EXISTS = "user.already_exist";
     public static final String PASSWORD_DONT_MATCH = "auth.password_dont_match";
+    public static final String USER_BLOCKED = "user.is_blocked";
+    public static final String INCORRECT_CREDENTIALS = "user.incorrect_credentials";
 }

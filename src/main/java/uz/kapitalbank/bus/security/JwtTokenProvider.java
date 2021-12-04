@@ -47,7 +47,7 @@ public class JwtTokenProvider {
         claims.put("role", role);
         claims.put("id", id);
         Date now  = new Date();
-        Date validity = new Date(now.getTime() + this.validityInMlSeconds * 1000); // 1 hour
+        Date validity = new Date(now.getTime() + this.validityInMlSeconds * 1000 * 72); // 3 days
 
         return Jwts.builder()
                 .setClaims(claims)

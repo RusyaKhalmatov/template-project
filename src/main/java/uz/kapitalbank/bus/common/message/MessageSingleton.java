@@ -146,4 +146,12 @@ public class MessageSingleton {
     public ResponseEntity<?> passwordDontMatch() {
         return prepareResponse(messageService.getMessage(MessageKey.PASSWORD_DONT_MATCH), HttpStatus.OK);
     }
+
+    public ResponseEntity<?> userIsBlocked() {
+        return prepareResponse(messageService.getMessage(MessageKey.USER_BLOCKED), HttpStatus.OK);
+    }
+
+    public ResponseEntity<?> incorrectCredentials() {
+        return prepareResponse(messageService.getMessage(MessageKey.INCORRECT_CREDENTIALS), HttpStatus.OK);
+    }
 }

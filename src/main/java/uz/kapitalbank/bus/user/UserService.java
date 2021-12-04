@@ -77,4 +77,12 @@ public class UserService {
     public User save(User user) {
         return userRepo.save(user);
     }
+
+    public Optional<User> findByUsernameAndStateIsNot(String username, UserState userState) {
+        return userRepo.findByUsernameAndUserStateIsNot(username, userState);
+    }
+
+    public Optional<User> findById(long userId) {
+        return userRepo.findById(userId);
+    }
 }
