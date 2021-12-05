@@ -10,6 +10,7 @@ import uz.kapitalbank.bus.exceptions.CommonException;
 import uz.kapitalbank.bus.user.models.UserCreateDto;
 
 
+import javax.xml.transform.OutputKeys;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Optional;
@@ -89,5 +90,12 @@ public class UserService {
     public void updateUserActivity(String newSalt, User user) {
         user.setSalt(newSalt);
         save(user);
+    }
+
+    public ResponseEntity<?> getUser(Long userId) {
+        Optional<User> userOptinal = findById(userId);
+        if(userOptinal.isEmpty())
+            return messageSingleton.userNotFound();
+        return response(userOptinal.get(), HttpStatus.OK);
     }
 }

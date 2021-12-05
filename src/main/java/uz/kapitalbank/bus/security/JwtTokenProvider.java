@@ -9,11 +9,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import uz.kapitalbank.bus.exceptions.JwtAuthenticationException;
+import uz.kapitalbank.bus.user.User;
+import uz.kapitalbank.bus.user.UserService;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -30,10 +33,13 @@ public class JwtTokenProvider {
     private String authorization;
     @Value("${jwt.refreshTokenExpires}")
     private long refreshValidityInMiliseconds;
+    private final UserService userService;
 
     private final UserDetailsService userDetailsService;
 
-    public JwtTokenProvider(@Qualifier("userDetailServiceImpl") UserDetailsService userDetailsService) {
+    public JwtTokenProvider(UserService userService,
+                            @Qualifier("userDetailServiceImpl") UserDetailsService userDetailsService) {
+        this.userService = userService;
         this.userDetailsService = userDetailsService;
     }
 
@@ -58,9 +64,27 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+//    public boolean validateToken(String token) throws JwtAuthenticationException {
+//        try {
+//            Jws<Claims> claimsJws = Jwts.parser().setSigningKey(this.secretKey).parseClaimsJws(token);
+//            return !claimsJws.getBody().getExpiration().before(new Date());
+//        }catch(JwtException | IllegalArgumentException e)
+//        {
+////            throw new JwtAuthenticationException("Jwt token is expired or invalid", HttpStatus.UNAUTHORIZED);
+//            return false;
+//        }
+//    }
     public boolean validateToken(String token) throws JwtAuthenticationException {
         try {
             Jws<Claims> claimsJws = Jwts.parser().setSigningKey(this.secretKey).parseClaimsJws(token);
+            Integer userId = (Integer) claimsJws.getBody().get("id");
+            Optional<User> userOptional = userService.findById(userId.longValue());
+            if(userOptional.isEmpty())
+                return false;
+            String salt = (String) claimsJws.getBody().get("salt");
+            if(!salt.equals(userOptional.get().getSalt()))
+                return false;
+
             return !claimsJws.getBody().getExpiration().before(new Date());
         }catch(JwtException | IllegalArgumentException e)
         {
@@ -89,9 +113,11 @@ public class JwtTokenProvider {
         return request.getHeader(this.authorization);
     }
 
-    public String generateRefreshToken(Long id, String username){
+    public String generateRefreshToken(Long id, String username,String salt){
         Claims claims = Jwts.claims().setSubject(String.valueOf(id));
         claims.put("username", username);
+        claims.put("id", id);
+        claims.put("salt", salt);
         Date now  = new Date();
         Date validity = new Date(now.getTime() + this.refreshValidityInMiliseconds * 1000 * 8760); // 1 year
 

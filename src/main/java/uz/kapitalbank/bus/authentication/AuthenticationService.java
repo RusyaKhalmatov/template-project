@@ -59,7 +59,7 @@ public class AuthenticationService {
             return messageSingleton.incorrectCredentials();
         String newSalt = Utils.generateRandomStringLower(9);
         String token = jwtTokenProvider.createToken(user.getUsername(), user.getRole().name(), user.getId(), newSalt);
-        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId(), user.getUsername());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId(), user.getUsername(), newSalt);
         CompletableFuture.runAsync(()->userService.updateUserActivity(newSalt, user));
         Map<String, String> responseMap = new HashMap<>();
         responseMap.put("token", token);
@@ -82,13 +82,13 @@ public class AuthenticationService {
                     String newUsersSalt = Utils.generateRandomStringLower(9);
                     newToken = this.jwtTokenProvider.createToken(user.getUsername(),user.getRole().name(),user.getId(),newUsersSalt);
                     responseMap.put("token", newToken);
-                    CompletableFuture.runAsync(()->userService.updateUserActivity(newUsersSalt, user));
+                    return response(responseMap,HttpStatus.OK);
                 }
             }
         } catch (JwtAuthenticationException e)
         {
             return messageSingleton.unauthorized();
         }
-        return new ResponseEntity<>(responseMap,HttpStatus.OK);
+        return messageSingleton.unauthorized();
     }
 }

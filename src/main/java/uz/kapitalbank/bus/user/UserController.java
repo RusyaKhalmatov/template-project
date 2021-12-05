@@ -4,10 +4,7 @@ import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uz.kapitalbank.bus.user.models.UserCreateDto;
 
 /**
@@ -22,7 +19,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("create/user")
-//    @PreAuthorize("hasAuthority('user:admin-user')")
+    @PreAuthorize("hasAuthority('user:admin-user')")
     public ResponseEntity<?> createUser(@RequestBody UserCreateDto userDto){
         return userService.createUser(userDto);
     }
@@ -32,4 +29,12 @@ public class UserController {
     public ResponseEntity<?> createAdminUser(@RequestBody UserCreateDto userDto){
         return userService.createAdminUser(userDto);
     }
+
+    @GetMapping("get/{userId}")
+    @PreAuthorize("hasAuthority('user:super-admin-user')")
+    public ResponseEntity<?> getById(@PathVariable("userId") Long userId){
+        return userService.getUser(userId);
+    }
+
+
 }
